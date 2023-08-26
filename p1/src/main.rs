@@ -17,9 +17,9 @@ fn main() {
     let mut count: usize = 0;
 
     for i in 0..(data.len() - 3) {
-        let firstWindow = data[i] + data[i + 1] + data[i + 2];
-        let secondWindow = data[i + 1] + data[i + 2] + data[i + 3];
-        if secondWindow > firstWindow {
+        let first_window = data[i] + data[i + 1] + data[i + 2];
+        let second_window = data[i + 1] + data[i + 2] + data[i + 3];
+        if second_window > first_window {
             count += 1;
         }
     }

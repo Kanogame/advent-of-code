@@ -14,7 +14,7 @@ fn main() {
     let mut aim: usize = 0;
     let mut pos: usize = 0;
 
-    for (index, line) in reader.lines().enumerate() {
+    for line in reader.lines() {
         let hay = line.unwrap();
         let a = re.captures(hay.as_str()).unwrap();
         let datatype = &a["type"];
