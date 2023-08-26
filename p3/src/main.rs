@@ -1,49 +1,34 @@
 use std::fs::read_to_string;
 
 fn main() {
-    let mut data_o = read_lines("p3.txt");
-    let mut data_co2 = data_o.clone();
+    let data = read_lines("p3.txt");
 
-    let len: i32 = data_o[0].len().try_into().unwrap();
+    let len: i32 = data[0].len().try_into().unwrap();
 
+    println!("{}", string_convert(&solve(len, data.clone(), false)) * string_convert(&solve(len, data, true)));
+}
+
+fn solve(len: i32, mut data: Vec<String>, is_co2:bool) -> String {
     for i in 0..len {
         let mut common = 0;
-        let datalen: i32 = data_o.len().try_into().unwrap();
-        for line in &data_o {
-            let num: Vec<char> = line.chars().collect();
-            common += num[i as usize].to_string().parse::<i32>().unwrap();
-        }
-
-        let target: char; 
-        if f64::from(common) >= f64::from(datalen) / 2f64 {
-            target = '1';
-        } else {
-            target = '0';
-        }
-
-        data_o.retain(|x| x.chars().collect::<Vec<char>>()[i as usize] == target);
-    }
-
-    for i in 0..len {
-        let mut common = 0;
-        let datalen: i32 = data_co2.len().try_into().unwrap();
+        let datalen: i32 = data.len().try_into().unwrap();
         if datalen == 1 {break;}
-        for line in &data_co2 {
+        for line in &data {
             let num: Vec<char> = line.chars().collect();
             common += num[i as usize].to_string().parse::<i32>().unwrap();
         }
 
         let target: char; 
         if f64::from(common) >= f64::from(datalen) / 2f64 {
-            target = '0';
+            target = if is_co2 { '1' } else { '0' };
         } else {
-            target = '1';
+            target = if is_co2 { '0' } else { '1' };
         }
 
-        data_co2.retain(|x| x.chars().collect::<Vec<char>>()[i as usize] == target);
+        data.retain(|x| x.chars().collect::<Vec<char>>()[i as usize] == target);
     }
 
-    println!("{}", string_convert(&data_co2[0]) * string_convert(&data_o[0]));
+    return data[0].clone();
 }
 
 fn string_convert(data: &String) -> i32 {
