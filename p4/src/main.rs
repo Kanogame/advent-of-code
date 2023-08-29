@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::fs::read_to_string;
 
 struct Item {
     value: i32,
@@ -6,9 +7,29 @@ struct Item {
 }
 
 fn main() {
+    //parsing
+    let input = read_lines("p4.txt");
+    let numbers = get_numbers(&input[0]);
+    let mut cards: Vec<Vec<Vec<Item>>> = vec![];
 
-    let re: Regex = Regex::new(r"(?<value>\d+)").unwrap();
+    for i in 0..(input.len() - 1) / 6 {
+        cards.push(parse_card(&input[i * 6 + 2..(i + 1) * 6 + 1]));
+    }
+    //solving
+    'main_loop: for (num_pos, num_val) in numbers.into_iter().enumerate() {
+        for card in cards.iter_mut() {
+            if mark_card(card, num_val) {
+                print_card(card);
+                println!("BINGO");
+                break 'main_loop;
+            }
+        }
+    }
 
+    
+    
+
+/* 
     let data  = [
         String::from("60 79 46  9 58"),
         String::from("97 81  6 94 84"),
@@ -16,29 +37,37 @@ fn main() {
         String::from("11 28  0 91 15"),
         String::from("24 77 34 59 36"),
     ];
-    let mut card = parse_card(data);
-
-    mark_card(&mut card, 60);
-    mark_card(&mut card, 79);
-    mark_card(&mut card, 46);
-    mark_card(&mut card, 9);
-    mark_card(&mut card, 58);
-    println!("{}", mark_card(&mut card, 58));
-    
-    //let mut results = vec![];
-    //for (_, [data]) in re.captures_iter(hay).map(|c| c.extract()) {
-    //    results.push(data);
-    //}
 
     for i in card {
         for j in i {
             print!("{} {} ", j.value, if j.marked {"t"} else {"f"});
         }
         println!();
+    } */
+
+}
+
+fn print_card(data: & Vec<Vec<Item>>) {
+    for i in data {
+        for j in i {
+            print!("{} {} ", j.value, j.marked);
+        }
+        println!();
     }
 }
 
-fn parse_card(data: [String; 5]) -> Vec<Vec<Item>> {
+fn get_numbers(data: &String) -> Vec<i32> { 
+    let mut res: Vec<i32> = vec![];
+    let re: Regex = Regex::new(r"(?<value>\d+)").unwrap();
+
+    for (_, [value]) in re.captures_iter(data).map(|c| c.extract()) {
+        res.push(value.parse::<i32>().unwrap());
+    }
+
+    return res;
+}
+
+fn parse_card(data: &[String]) -> Vec<Vec<Item>> {
     let re: Regex = Regex::new(r"(?<value>\d+)").unwrap();
     let mut res: Vec<Vec<Item>>  = vec![];
     for (i, value) in data.into_iter().enumerate() {
@@ -83,4 +112,12 @@ fn check_column(card: &Vec<Vec<Item>>, column: usize) -> bool {
         }
     }
     return true;
+}
+
+fn read_lines(filename: &str) -> Vec<String> {
+    read_to_string(filename) 
+        .unwrap() 
+        .lines() 
+        .map(String::from)
+        .collect() 
 }
