@@ -17,8 +17,33 @@ fn main() {
     }
     //solving
     'main_loop: for num_val in numbers {
-        for value in cards.iter_mut().filter(|card| );
+        for card in cards.iter_mut() {
+            if mark_card(card, num_val) {
+                println!("{}", calculate_unmarked(card) * num_val );
+                break 'main_loop;
+            }
+        }
     }
+
+    
+    
+
+/* 
+    let data  = [
+        String::from("60 79 46  9 58"),
+        String::from("97 81  6 94 84"),
+        String::from("38 40 17 61 29"),
+        String::from("11 28  0 91 15"),
+        String::from("24 77 34 59 36"),
+    ];
+
+    for i in card {
+        for j in i {
+            print!("{} {} ", j.value, if j.marked {"t"} else {"f"});
+        }
+        println!();
+    } */
+
 }
 
 fn calculate_unmarked(data: & Vec<Vec<Item>>) -> i32 {
