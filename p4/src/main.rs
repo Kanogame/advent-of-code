@@ -5,7 +5,6 @@ struct Item {
     value: i32,
     marked: bool,
 }
-
 fn main() {
     //parsing
     let input = read_lines("p4.txt");
@@ -16,8 +15,15 @@ fn main() {
         cards.push(parse_card(&input[i * 6 + 2..(i + 1) * 6 + 1]));
     }
     //solving
+    let mut datalen = cards.len();
     'main_loop: for num_val in numbers {
-        for value in cards.iter_mut().filter(|card| );
+        for value in cards.iter_mut().filter(|x| !slow_bingo(x)) {
+            if mark_card(value, num_val) {datalen -= 1};
+            if datalen == 0 {
+                println!("{}", calculate_unmarked(value) * num_val);
+                return;
+            }
+        }
     }
 }
 
@@ -52,6 +58,20 @@ fn get_numbers(data: &String) -> Vec<i32> {
     }
 
     return res;
+}
+
+fn slow_bingo(data: &Vec<Vec<Item>>) -> bool {
+    for row in 0..5 {
+        if check_row(data, row) {
+            return true;
+        }
+    }
+    for column in 0..5 {
+        if check_column(data, column) {
+            return true;
+        }
+    }
+    return false;
 }
 
 fn parse_card(data: &[String]) -> Vec<Vec<Item>> {
