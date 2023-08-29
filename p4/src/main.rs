@@ -16,11 +16,10 @@ fn main() {
         cards.push(parse_card(&input[i * 6 + 2..(i + 1) * 6 + 1]));
     }
     //solving
-    'main_loop: for (num_pos, num_val) in numbers.into_iter().enumerate() {
+    'main_loop: for num_val in numbers {
         for card in cards.iter_mut() {
             if mark_card(card, num_val) {
-                print_card(card);
-                println!("BINGO");
+                println!("{}", calculate_unmarked(card) * num_val );
                 break 'main_loop;
             }
         }
@@ -47,6 +46,19 @@ fn main() {
 
 }
 
+fn calculate_unmarked(data: & Vec<Vec<Item>>) -> i32 {
+    let mut res: i32 = 0;
+    for i in data {
+        for j in i {
+            if !j.marked {
+                res += j.value;
+            }
+        }
+    }
+
+    return res;
+}
+ 
 fn print_card(data: & Vec<Vec<Item>>) {
     for i in data {
         for j in i {
