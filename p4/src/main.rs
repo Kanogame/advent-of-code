@@ -16,7 +16,7 @@ fn main() {
     }
     //solving
     let mut datalen = cards.len();
-    'main_loop: for num_val in numbers {
+    for num_val in numbers {
         for value in cards.iter_mut().filter(|x| !slow_bingo(x)) {
             if mark_card(value, num_val) {datalen -= 1};
             if datalen == 0 {
@@ -38,15 +38,6 @@ fn calculate_unmarked(data: & Vec<Vec<Item>>) -> i32 {
     }
 
     return res;
-}
- 
-fn print_card(data: & Vec<Vec<Item>>) {
-    for i in data {
-        for j in i {
-            print!("{} {} ", j.value, j.marked);
-        }
-        println!();
-    }
 }
 
 fn get_numbers(data: &String) -> Vec<i32> { 
