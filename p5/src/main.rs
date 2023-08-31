@@ -11,7 +11,7 @@ struct Line {
     end: Point,
 }
 
-const array_size: usize = 10;
+const array_size: usize = 1000;
 
 fn main() {
     //parse
@@ -22,7 +22,6 @@ fn main() {
     let mut field: [[i32; array_size]; array_size] = [[0; array_size]; array_size];
     fill_field(&mut field, input);
     println!("{}", calc_field(&field));
-    print_field(&field);
 }
 
 fn print_field(field: &[[i32; array_size]; array_size]) {
@@ -70,11 +69,12 @@ fn fill_field(field: &mut [[i32; array_size]; array_size], data: Vec<Line>) {
         } else {
             let diff = (line.start.y - line.end.y).abs();
             let (startx, starty) = if line.start.x > line.end.x || line.start.y > line.end.y {(line.end.x, line.end.y)} else {(line.start.x, line.start.y)};
-            println!("{}, {}", (starty), (startx));
             let posx = if line.start.x < line.end.x {-1} else{1};
             let posy = if line.start.y < line.end.y {-1} else{1};
             for i in 0..diff + 1{
-                println!("{}, {}, {}", (starty + i * posy), (startx + i* posx), diff);
+                if starty + i * posy < 0  || startx + i* posx < 0{
+                    break;
+                }
                 field[(starty + i * posy).abs() as usize][(startx + i* posx).abs() as usize] += 1;
             }
         }
