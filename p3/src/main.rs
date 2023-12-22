@@ -1,17 +1,6 @@
 use std::{fs::read_to_string, collections::HashSet};
 
 fn main() {
-    let data = vec![
-    "467..114..".to_string(),
-    "...*......".to_string(),
-    "..35..633.".to_string(),
-    "......#...".to_string(),
-    "617*......".to_string(),
-    ".....+.58.".to_string(),
-    "..592.....".to_string(),
-    "......755.".to_string(),
-    "...$.*....".to_string(),
-    ".664.598..".to_string()];
     //let data = read_lines("data.txt");
     println!("{}", run(data))
 }
