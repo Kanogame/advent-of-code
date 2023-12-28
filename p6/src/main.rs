@@ -1,13 +1,13 @@
-use std::{fs::read_to_string};
+use std::{fs::read_to_string, fmt::Result};
 use regex::Regex;
 
 fn main() {
-    let arr = parseInput(read_lines("data.txt"));
-    solution_pt1(arr);
+    let arr = parseInput_pt2(read_lines("data.txt"));
+    solution(arr);
 
 }
 
-fn solution_pt1(arr: Vec<(i32, i32)>) {
+fn solution(arr: Vec<(i64, i64)>) {
     let mut res = 1;
     for data in arr {
         let mut cur = 0;
@@ -23,12 +23,19 @@ fn solution_pt1(arr: Vec<(i32, i32)>) {
     println!("{}", res);
 }
 
-fn parseInput(input: Vec<String>) -> Vec<(i32, i32)> {
-    let re: Regex = Regex::new(r"[0-9]+").unwrap();
-    let Time = re.find_iter(input[0].as_str()).filter_map(|digits| digits.as_str().parse::<i32>().ok()).collect::<Vec<_>>();
-    let Distance = re.find_iter(input[1].as_str()).filter_map(|digits| digits.as_str().parse::<i32>().ok()).collect::<Vec<_>>();
+fn parseInput_pt2(input: Vec<String>) -> Vec<(i64, i64)> {
+    let re: Regex = Regex::new(r"\D+").unwrap();
+    let Time = re.replace_all(input[0].as_str(), "").parse::<i64>().unwrap();
+    let Distance = re.replace_all(input[1].as_str(), "").parse::<i64>().unwrap();
+    return vec![(Time, Distance)];
+}
 
-    let mut Result: Vec<(i32, i32)> = Vec::new();
+fn parseInput_pt1(input: Vec<String>) -> Vec<(i64, i64)> {
+    let re: Regex = Regex::new(r"[0-9]+").unwrap();
+    let Time = re.find_iter(input[0].as_str()).filter_map(|digits| digits.as_str().parse::<i64>().ok()).collect::<Vec<_>>();
+    let Distance = re.find_iter(input[1].as_str()).filter_map(|digits| digits.as_str().parse::<i64>().ok()).collect::<Vec<_>>();
+
+    let mut Result: Vec<(i64, i64)> = Vec::new();
     
     for i in 0..Time.len() {
         Result.push((Time[i], Distance[i]))
