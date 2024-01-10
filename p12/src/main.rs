@@ -16,27 +16,23 @@ fn remove_crap(records: Vec<(String, Vec<i32>)>) {
 
 #[cached]
 fn count(cfg: String, nums: Vec<i32>) -> i64 {
-    let mut nums = nums;
     let mut result = 0;
     if nums.len() == 0 {
         return !cfg.contains("#") as i64;
     }
-
+    
     let current = nums[0];
-    nums.remove(nums.iter().position(|x| *x == nums[0]).expect("needle not found"));
+    let mut nums = nums;
+    nums.remove(nums.iter().position(|x| *x == nums[0]).unwrap());
 
     for i in 0..(cfg.len() - nums.iter().sum::<i32>() as usize - nums.len() - current as usize + 1) {
-        if cfg[..i].contains("#") { return 0; }
+        if cfg[..i].contains("#") { break; }
         let nxt = i as i32 + current;
         if nxt <= cfg.len() as i32 && !cfg[i..nxt as usize].contains(".") && (cfg.chars().nth(nxt as usize) == None || cfg.chars().nth(nxt as usize).unwrap() != '#') {
-            if (nxt as usize) < cfg.len() {
-                result += count(cfg[(nxt as usize + 1)..].to_string(), nums.clone());
-            } else {
-                result += count("".to_string(), nums.clone());
-            }
+            result += count(if ((nxt as usize) < cfg.len()) {cfg[(nxt as usize + 1)..].to_string()} else {"".to_string()}, nums.clone());
         }
     }
-    result
+    return result;
 }
 
 fn parse_input_pt2(input: Vec<String>) -> Vec<(String, Vec<i32>)> {
