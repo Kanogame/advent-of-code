@@ -1,4 +1,4 @@
-use std::{env, error, fmt::Error, fs::read_to_string, num::ParseIntError};
+use std::{env, fs::read_to_string};
 
 use generic_problem::{Day, ProblemInput};
 use problem::MODULE_LIST;
@@ -46,9 +46,9 @@ fn parse_arguments(args: Vec<String>) -> (i32, i32) {
                 if el != args.len() - 1 {
                     day_number = match args[el + 1].parse::<i32>() {
                         Ok(file) => file,
-                        Err(error) => {
+                        Err(_) => {
                             println!("Error while parsing arguments: Not an integer");
-                            0
+                            -1
                         }
                     };
                 }
@@ -57,9 +57,9 @@ fn parse_arguments(args: Vec<String>) -> (i32, i32) {
                 if el != args.len() - 1 {
                     part_number = match args[el + 1].parse::<i32>() {
                         Ok(file) => file,
-                        Err(error) => {
+                        Err(_) => {
                             println!("Error while parsing arguments: Not an integer");
-                            0
+                            -1
                         }
                     };
                 }
@@ -85,10 +85,10 @@ mod generic_problem {
     }
 
     // test?
-    pub struct Tests {
-        pub part_one: String,
-        pub part_two: String,
-    }
+    //struct Tests {
+    //    pub part_one: String,
+    //    pub part_two: String,
+    //}
 
     pub struct Day {
         pub name: String,

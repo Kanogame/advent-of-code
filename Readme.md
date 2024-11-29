@@ -1,4 +1,6 @@
-# This is the Advent of Code template in Rust. To add new day:
+# This is the Advent of Code template in Rust.
+
+## To add new day:
 
 - Create new file in src/problem/dayX.rs
 - Write init function
@@ -16,3 +18,8 @@ pub fn init() -> generic_problem::Day {
 
 - Add module to src/problem/mod.rs
 - Add init function to MODULE_LIST
+
+## To add new input file:
+
+- Create inputs folder
+- Insert text into dayX.txt
