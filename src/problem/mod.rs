@@ -1,5 +1,5 @@
 use crate::generic_problem;
 
-pub mod day0;
+pub mod day1;
 
-pub static MODULE_LIST: [fn() -> generic_problem::Day; 1] = [day0::init];
+pub static MODULE_LIST: [fn() -> generic_problem::Day; 1] = [day1::init];
