@@ -9,7 +9,7 @@ fn main() {
     let (day, part) = parse_arguments(args);
     let mut ran = false;
 
-    for problem in MODULE_LIST.iter() {
+    for problem in MODULE_LIST {
         let init_value: Day = problem();
         if init_value.day_id == day {
             let lines = load_file(format!("./inputs/{}.txt", init_value.name));
@@ -25,8 +25,8 @@ fn main() {
                 (init_value.part_two)(ProblemInput { lines: lines });
             }
             ran = true;
+            break;
         }
-        break;
     }
 
     if !ran {

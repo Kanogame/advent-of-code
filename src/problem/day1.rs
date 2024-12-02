@@ -41,22 +41,22 @@ pub fn part_one(input: generic_problem::ProblemInput) {
 pub fn part_two(input: generic_problem::ProblemInput) {
     let (left, right) = parse(input);
 
-    let mut rightMap: HashMap<i32, i32> = HashMap::new();
+    let mut right_map: HashMap<i32, i32> = HashMap::new();
 
     let mut res: i32 = 0;
     for i in right {
-        let val = rightMap.get_mut(&i);
+        let val = right_map.get_mut(&i);
         if val == None {
-            rightMap.insert(i, 1);
+            right_map.insert(i, 1);
         } else {
             *val.unwrap() += 1;
         }
     }
 
     for i in left {
-        let val = rightMap.get(&i);
+        let val = right_map.get(&i);
         if val != None {
-            res += i * rightMap.get(&i).unwrap();
+            res += i * right_map.get(&i).unwrap();
         }
     }
 
