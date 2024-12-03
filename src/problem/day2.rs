@@ -24,30 +24,10 @@ pub fn part_one(input: generic_problem::ProblemInput) {
     let reports = parse(input);
 
     let mut res: usize = 0;
-    let mut old_diff: i32 = 0;
-    let mut diff: i32;
-    let mut flag: bool;
     for report in reports {
-        flag = true;
-        for level in 1..report.len() {
-            diff = report[level - 1] - report[level];
-            if diff.abs() > 3 || diff.abs() < 1 {
-                flag = false;
-                break;
-            }
-
-            if old_diff != 0 && (diff.signum() != old_diff.signum()) {
-                flag = false;
-                break;
-            }
-
-            old_diff = diff;
-        }
-
-        if flag {
+        if is_safe(&report) {
             res += 1;
         }
-        old_diff = 0;
     }
 
     println!("{}", res);
