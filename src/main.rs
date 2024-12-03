@@ -25,8 +25,8 @@ fn main() {
                 (init_value.part_two)(ProblemInput { lines: lines });
             }
             ran = true;
+            break;
         }
-        break;
     }
 
     if !ran {
