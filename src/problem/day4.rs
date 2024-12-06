@@ -1,7 +1,5 @@
-use core::ops::Range;
-use regex::Regex;
-
 use crate::generic_problem::{self, Day};
+use core::ops::Range;
 
 pub fn init() -> generic_problem::Day {
     return Day {
@@ -163,15 +161,15 @@ pub fn part_one(input: generic_problem::ProblemInput) {
 }
 
 fn x_max(pos_x: usize, pos_y: usize, lines: &Vec<String>) -> bool {
-    const xmas: [[[char; 3]; 3]; 4] = [
+    const XMAS: [[[char; 3]; 3]; 4] = [
         [['M', '.', 'S'], ['.', 'A', '.'], ['M', '.', 'S']],
         [['S', '.', 'M'], ['.', 'A', '.'], ['S', '.', 'M']],
         [['S', '.', 'S'], ['.', 'A', '.'], ['M', '.', 'M']],
         [['M', '.', 'M'], ['.', 'A', '.'], ['S', '.', 'S']],
     ];
 
-    let mut flag;
-    for patern in xmas {
+    let mut flag: bool;
+    for patern in XMAS {
         flag = true;
         for y in 0..3 {
             for x in 0..3 {
