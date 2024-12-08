@@ -6,13 +6,16 @@ mod problem;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let (day, part) = parse_arguments(args);
+    let (day, part, all) = parse_arguments(args);
     let mut ran = false;
 
     for problem in MODULE_LIST {
         let init_value: Day = problem();
-        if init_value.day_id == day {
+        if all || init_value.day_id == day {
             let lines = load_file(format!("./inputs/{}.txt", init_value.name));
+            if all {
+                println!("Running solution for day {}", init_value.day_id);
+            }
 
             if part == -1 {
                 (init_value.part_one)(ProblemInput {
@@ -25,7 +28,9 @@ fn main() {
                 (init_value.part_two)(ProblemInput { lines: lines });
             }
             ran = true;
-            break;
+            if !all {
+                break;
+            }
         }
     }
 
@@ -36,9 +41,10 @@ fn main() {
     }
 }
 
-fn parse_arguments(args: Vec<String>) -> (i32, i32) {
+fn parse_arguments(args: Vec<String>) -> (i32, i32, bool) {
     let mut day_number: i32 = -1;
     let mut part_number: i32 = -1;
+    let mut all: bool = false;
 
     for el in 0..args.len() {
         match args[el].as_str() {
@@ -64,10 +70,17 @@ fn parse_arguments(args: Vec<String>) -> (i32, i32) {
                     };
                 }
             }
+            "-a" => {
+                all = true;
+            }
             _ => {}
         }
     }
-    (day_number, part_number)
+    if !all {
+        return (day_number, part_number, false);
+    }
+
+    return (-1, -1, true);
 }
 
 fn load_file(path: String) -> Vec<String> {
