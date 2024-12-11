@@ -106,7 +106,6 @@ pub fn part_two(input: generic_problem::ProblemInput) {
                 break;
             }
         }
-        //println!("{:?}", disk);
     }
 
     let mut cksum = 0;
@@ -115,6 +114,4 @@ pub fn part_two(input: generic_problem::ProblemInput) {
     }
 
     println!("{:?}", cksum);
-
-    //println!("{}", res);
 }
