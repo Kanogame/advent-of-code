@@ -1,13 +1,8 @@
-use std::{
-    collections::{HashMap, HashSet},
-    str,
-};
-
 use crate::generic_problem::{self, Day};
 
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day9"),
         day_id: 9,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
@@ -69,8 +64,57 @@ pub fn part_one(input: generic_problem::ProblemInput) {
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
+    let values: Vec<usize> = input.lines[0]
+        .chars()
+        .map(|x| x.to_digit(10).unwrap() as usize)
+        .collect();
 
-    //TODO
+    let mut disk: Vec<usize> = Vec::new();
+
+    let mut empty_cache: Vec<(usize, usize)> = Vec::new();
+    let mut full_cache: Vec<(usize, usize)> = Vec::new();
+
+    for (id, block_size) in values.iter().enumerate() {
+        let file_id = id / 2;
+        if id % 2 == 1 {
+            empty_cache.push((disk.len(), *block_size));
+        } else {
+            full_cache.push((disk.len(), *block_size));
+        }
+        for _ in 0..*block_size {
+            if id % 2 == 0 {
+                disk.push(file_id);
+            } else {
+                disk.push(0);
+            }
+        }
+    }
+
+    for (full_pos, full_size) in full_cache.iter().rev() {
+        for (pos, size) in empty_cache.iter_mut() {
+            if *full_size <= *size && *pos < *full_pos {
+                for k in *pos..(*pos + *full_size) {
+                    disk[k] = disk[*full_pos];
+                }
+
+                for k in *full_pos..(*full_pos + *full_size) {
+                    disk[k] = 0;
+                }
+
+                *pos += *full_size;
+                *size -= *full_size;
+                break;
+            }
+        }
+        //println!("{:?}", disk);
+    }
+
+    let mut cksum = 0;
+    for (i, val) in disk.into_iter().enumerate() {
+        cksum += (i as i64) * (val as i64);
+    }
+
+    println!("{:?}", cksum);
 
     //println!("{}", res);
 }
