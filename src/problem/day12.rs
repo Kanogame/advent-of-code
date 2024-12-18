@@ -1,10 +1,9 @@
 use std::{
     char,
-    collections::{hash_set, BTreeSet, HashMap, HashSet},
-    ptr::null,
+    collections::{HashMap, HashSet},
 };
 
-use itertools::Itertools;
+use itertools::{Diff, Itertools};
 
 use crate::generic_problem::{self, Day};
 
@@ -19,57 +18,44 @@ pub fn init() -> generic_problem::Day {
     };
 }
 
-fn get_perimeter(diff_x: i32, diff_y: i32, letter: char, lines: &Vec<Vec<char>>) -> i32 {
-    let left = diff_x - 1 >= 0 && lines[diff_y as usize][(diff_x - 1) as usize] == letter;
-    let right = diff_x + 1 < lines[0].len() as i32
-        && lines[diff_y as usize][(diff_x + 1) as usize] == letter;
-    let top = diff_y - 1 >= 0 && lines[(diff_y - 1) as usize][diff_x as usize] == letter;
-    let bottom =
-        diff_y + 1 < lines.len() as i32 && lines[(diff_y + 1) as usize][diff_x as usize] == letter;
-    let sum = left as i32 + right as i32 + top as i32 + bottom as i32;
-
-    if sum == 4 {
-        return -4;
-    } else if sum == 3 {
-        return -2;
-    } else if sum == 2 {
-        return 0;
-    } else if sum == 1 {
-        return 2;
+fn get_perimeter(
+    x: i32,
+    y: i32,
+    been: &HashSet<(i32, i32)>,
+    lines: &HashMap<(i32, i32), char>,
+    letter: char,
+) -> i32 {
+    match DIRECTIONS
+        .iter()
+        .map(|[d_x, d_y]| {
+            lines.get(&(x + d_x, y + d_y)).is_some_and(|c| *c == letter)
+                && been.get(&(x + d_x, y + d_y)).is_some()
+        })
+        .fold(0, |state, el| state + el as i32)
+    {
+        4 => -4,
+        3 => -2,
+        2 => 0,
+        1 => 2,
+        _ => 4,
     }
-    return 4;
 }
 
 fn rec_region_p1(
     x: i32,
     y: i32,
     letter: char,
-    replace: char,
-    lines: &mut Vec<Vec<char>>,
+    lines: &HashMap<(i32, i32), char>,
+    been: &mut HashSet<(i32, i32)>,
 ) -> (i32, i32) {
-    if lines[y as usize][x as usize] != letter || lines[y as usize][x as usize] == replace {
+    if !lines.get(&(x, y)).is_some_and(|c| *c == letter) || been.contains(&(x, y)) {
         return (0, 0);
     }
     let mut area = 1;
-    let mut perimeter = get_perimeter(x, y, replace, &lines);
-    lines[y as usize][x as usize] = replace;
-    if x - 1 >= 0 {
-        let res = rec_region_p1(x - 1, y, letter, replace, lines);
-        area += res.0;
-        perimeter += res.1;
-    }
-    if x + 1 < lines[0].len() as i32 {
-        let res = rec_region_p1(x + 1, y, letter, replace, lines);
-        area += res.0;
-        perimeter += res.1;
-    }
-    if y - 1 >= 0 {
-        let res = rec_region_p1(x, y - 1, letter, replace, lines);
-        area += res.0;
-        perimeter += res.1;
-    }
-    if y + 1 < lines.len() as i32 {
-        let res = rec_region_p1(x, y + 1, letter, replace, lines);
+    let mut perimeter = get_perimeter(x, y, &been, &lines, letter);
+    been.insert((x, y));
+    for [d_x, d_y] in DIRECTIONS {
+        let res = rec_region_p1(x + d_x, y + d_y, letter, lines, been);
         area += res.0;
         perimeter += res.1;
     }
@@ -78,21 +64,14 @@ fn rec_region_p1(
 }
 
 pub fn part_one(input: generic_problem::ProblemInput) {
-    let mut lines = input
-        .lines
-        .into_iter()
-        .map(|x| x.chars().collect())
-        .collect::<Vec<Vec<char>>>();
-
+    let lines_map = parse_input(input.lines);
+    let mut been: HashSet<(i32, i32)> = HashSet::new();
     let mut res = 0;
 
-    for i in 0..lines.len() as i32 {
-        for j in 0..lines[0].len() as i32 {
-            let ch = lines[i as usize][j as usize];
-            if ch.is_uppercase() {
-                let rec = rec_region_p1(j, i, ch, ch.to_ascii_lowercase(), &mut lines);
-                res += rec.0 * rec.1;
-            }
+    for (pos, val) in &lines_map {
+        if !been.contains(pos) {
+            let rec = rec_region_p1(pos.0, pos.1, *val, &lines_map, &mut been);
+            res += rec.0 * rec.1;
         }
     }
     println!("{}", res);
@@ -102,30 +81,34 @@ fn rec_region_p2(
     x: i32,
     y: i32,
     letter: char,
-    lines: &Vec<Vec<char>>,
+    lines: &HashMap<(i32, i32), char>,
     group: &mut HashSet<(i32, i32)>,
 ) {
-    if group.contains(&(x, y)) {
-        return;
-    }
-    if lines[y as usize][x as usize] != letter {
+    if group.contains(&(x, y)) || !lines.get(&(x, y)).is_some_and(|c| *c == letter) {
         return;
     }
 
     group.insert((x, y));
+    for [d_x, d_y] in DIRECTIONS {
+        rec_region_p2(x + d_x, y + d_y, letter, lines, group);
+    }
+}
 
-    if x - 1 >= 0 {
-        rec_region_p2(x - 1, y, letter, lines, group);
+fn parse_input(lines: Vec<String>) -> HashMap<(i32, i32), char> {
+    //somehow faster than for on x.chars().nth(j).unwrap()
+    let mut lines = lines
+        .into_iter()
+        .map(|x| x.chars().collect())
+        .collect::<Vec<Vec<char>>>();
+    let mut lines_map: HashMap<(i32, i32), char> = HashMap::new();
+
+    for i in 0..lines.len() as i32 {
+        for j in 0..lines[0].len() as i32 {
+            lines_map.insert((j, i), lines[i as usize][j as usize]);
+        }
     }
-    if x + 1 < lines[0].len() as i32 {
-        rec_region_p2(x + 1, y, letter, lines, group);
-    }
-    if y - 1 >= 0 {
-        rec_region_p2(x, y - 1, letter, lines, group);
-    }
-    if y + 1 < lines.len() as i32 {
-        rec_region_p2(x, y + 1, letter, lines, group);
-    }
+
+    lines_map
 }
 
 fn get_corners(pos: (i32, i32), lines: &HashMap<(i32, i32), char>, current: char) -> i32 {
@@ -156,35 +139,22 @@ fn get_corners(pos: (i32, i32), lines: &HashMap<(i32, i32), char>, current: char
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    let lines = input
-        .lines
-        .into_iter()
-        .map(|x| x.chars().collect())
-        .collect::<Vec<Vec<char>>>();
-
+    let lines_map = parse_input(input.lines);
     let mut res = 0;
     let mut used: HashSet<(i32, i32)> = HashSet::new();
-
-    let mut lines_map: HashMap<(i32, i32), char> = HashMap::new();
-
-    for i in 0..lines.len() as i32 {
-        for j in 0..lines[0].len() as i32 {
-            lines_map.insert((j, i), lines[i as usize][j as usize]);
-        }
-    }
+    let mut group: HashSet<(i32, i32)> = HashSet::new();
 
     for (pos, val) in &lines_map {
         if !used.contains(pos) {
-            let mut group: HashSet<(i32, i32)> = HashSet::new();
-
-            rec_region_p2(pos.0, pos.1, *val, &lines, &mut group);
+            rec_region_p2(pos.0, pos.1, *val, &lines_map, &mut group);
 
             let mut corners = 0;
-            for pos in group.clone() {
-                used.insert(pos);
-                corners += get_corners(pos, &lines_map, *val);
+            for pos in group.iter() {
+                used.insert(*pos);
+                corners += get_corners(*pos, &lines_map, *val);
             }
             res += group.len() as i32 * corners;
+            group.clear();
         }
     }
 
