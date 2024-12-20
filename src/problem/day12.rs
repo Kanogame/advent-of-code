@@ -3,7 +3,7 @@ use std::{
     collections::{HashMap, HashSet},
 };
 
-use itertools::{Diff, Itertools};
+use itertools::Itertools;
 
 use crate::generic_problem::{self, Day};
 
@@ -96,7 +96,7 @@ fn rec_region_p2(
 
 fn parse_input(lines: Vec<String>) -> HashMap<(i32, i32), char> {
     //somehow faster than for on x.chars().nth(j).unwrap()
-    let mut lines = lines
+    let lines = lines
         .into_iter()
         .map(|x| x.chars().collect())
         .collect::<Vec<Vec<char>>>();

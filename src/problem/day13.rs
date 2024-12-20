@@ -1,5 +1,3 @@
-use std::{collections::HashMap, i64::MAX, result};
-
 use regex::Regex;
 
 use crate::generic_problem::{self, Day};
