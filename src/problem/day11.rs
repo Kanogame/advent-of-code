@@ -55,7 +55,7 @@ fn rec(value: u64, step: u64, cache: &mut HashMap<(u64, u64), u64>) -> u64 {
     if cache.contains_key(&(step, value)) {
         return *cache.get(&(step, value)).unwrap();
     }
-    let mut res: u64 = 0;
+    let res: u64;
     if value == 0 {
         res = rec(1, step - 1, cache);
     } else if fast_len_u(value) % 2 == 0 {
