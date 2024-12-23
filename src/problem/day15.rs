@@ -1,6 +1,7 @@
-use std::{char, collections::BTreeMap};
-
-use itertools::Itertools;
+use std::{
+    char,
+    collections::{BTreeMap, LinkedList},
+};
 
 use crate::generic_problem::{self, Day};
 
@@ -8,7 +9,7 @@ const DIRECTIONS: [(i32, i32); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day15"),
         day_id: 15,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
@@ -103,7 +104,7 @@ fn move_box(pos: (i32, i32), direction: usize, map: &mut BTreeMap<(i32, i32), ch
             //move
             *map.get_mut(&next_pos).unwrap() = *map.get(&pos).unwrap();
             return true;
-        } else if next_value == '[' || next_value == ']' {
+        } else if next_value == '[' || next_value == ']' || next_value == 'O' {
             if move_box(next_pos, direction, map) {
                 //move
                 *map.get_mut(&next_pos).unwrap() = *map.get(&pos).unwrap();
@@ -118,11 +119,11 @@ fn add(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
     (a.0 + b.0, a.1 + b.1)
 }
 
-fn part_one_res(map: BTreeMap<(i32, i32), char>) -> i32 {
+fn part_res(map: &BTreeMap<(i32, i32), char>, reference: char) -> i32 {
     let mut res = 0;
     for ((a, b), v) in map {
-        if v == 'O' {
-            res += b + (a * 100);
+        if *v == reference {
+            res += *b + (*a * 100);
         }
     }
     res
@@ -149,5 +150,98 @@ pub fn part_one(input: generic_problem::ProblemInput) {
         }
     }
 
-    println!("{}", part_one_res(lines_map));
+    println!("{}", part_res(&lines_map, 'O'));
+}
+
+// pos - pos of any part of box
+// direction - direction of movement
+// map - map
+// will always move the box by direction (no matter what), cleaning any remaining box debris
+fn simple_clean_move(pos: (i32, i32), direction: (i32, i32), map: &mut BTreeMap<(i32, i32), char>) {
+    let b_2 = match *map.get(&pos).unwrap() {
+        ']' => DIRECTIONS[2],
+        '[' => DIRECTIONS[0],
+        _ => return,
+    };
+    let next_pos = add(pos, direction);
+
+    *map.get_mut(&next_pos).unwrap() = *map.get(&pos).unwrap();
+    *map.get_mut(&add(next_pos, b_2)).unwrap() = *map.get(&add(pos, b_2)).unwrap();
+
+    // cleaning
+    *map.get_mut(&pos).unwrap() = '.';
+    *map.get_mut(&add(pos, b_2)).unwrap() = '.';
+}
+
+//ret = success of moving
+fn move_wide_box(
+    pos: (i32, i32),
+    direction: usize,
+    map: &mut BTreeMap<(i32, i32), char>,
+    tx: &mut LinkedList<(i32, i32)>,
+) -> bool {
+    let pos_value = *map.get(&pos).unwrap();
+    if pos_value == '.' {
+        return true;
+    }
+    if pos_value == '#' {
+        return false;
+    }
+    let next_pos = add(pos, DIRECTIONS[direction]);
+    if map.get(&next_pos).is_none() {
+        return false;
+    }
+    if direction == 0 || direction == 2 {
+        if move_box(next_pos, direction, map) {
+            *map.get_mut(&next_pos).unwrap() = pos_value;
+            return true;
+        }
+        return false;
+    }
+    if move_wide_box(next_pos, direction, map, tx)
+        && move_wide_box(
+            add(
+                next_pos,
+                match pos_value {
+                    ']' => DIRECTIONS[2],
+                    '[' => DIRECTIONS[0],
+                    _ => return false,
+                },
+            ),
+            direction,
+            map,
+            tx,
+        )
+    {
+        for i in tx.iter() {
+            if *i == pos {
+                return true;
+            }
+        }
+        tx.push_back(pos);
+        return true;
+    }
+    return false;
+}
+
+pub fn part_two(input: generic_problem::ProblemInput) {
+    let (mut lines_map, mut rob, alg) = parse_input_two(input.lines);
+
+    for i in alg {
+        let next_pos = add(rob, DIRECTIONS[i]);
+        if lines_map.get(&next_pos).is_some() {
+            let mut tx: LinkedList<(i32, i32)> = LinkedList::new();
+            if move_wide_box(next_pos, i, &mut lines_map, &mut tx) {
+                while tx.len() > 0 {
+                    let v = tx.pop_front().unwrap();
+                    simple_clean_move(v, DIRECTIONS[i], &mut lines_map);
+                }
+                *lines_map.get_mut(&next_pos).unwrap() = '@';
+                *lines_map.get_mut(&rob).unwrap() = '.';
+                rob = next_pos;
+            }
+        }
+    }
+
+    println!("{}", part_res(&lines_map, '['));
 }
