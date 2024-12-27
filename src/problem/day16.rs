@@ -3,10 +3,7 @@ use std::{
     collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
 };
 
-use petgraph::{
-    graph::{Node, NodeIndex},
-    Graph, Undirected,
-};
+use petgraph::{graph::NodeIndex, Graph, Undirected};
 
 use crate::generic_problem::{self, Day};
 
@@ -39,7 +36,7 @@ fn build_graph(
     lines_map: BTreeMap<(i32, i32), char>,
 ) -> (Graph<(i32, i32), i32, Undirected>, NodeIndex, NodeIndex) {
     let mut graph: Graph<(i32, i32), i32, Undirected> = Graph::new_undirected();
-    let mut nodeMap: BTreeMap<(i32, i32), NodeIndex> = BTreeMap::new();
+    let mut node_map: BTreeMap<(i32, i32), NodeIndex> = BTreeMap::new();
 
     let mut start: NodeIndex = 0.into();
     let mut end: NodeIndex = 0.into();
@@ -49,14 +46,14 @@ fn build_graph(
             continue;
         } else if *value == 'S' {
             let id = graph.add_node(*pos);
-            nodeMap.insert(*pos, id);
+            node_map.insert(*pos, id);
             start = id;
         } else if *value == 'E' {
             let id = graph.add_node(*pos);
-            nodeMap.insert(*pos, id);
+            node_map.insert(*pos, id);
             end = id;
         } else {
-            nodeMap.insert(*pos, graph.add_node(*pos));
+            node_map.insert(*pos, graph.add_node(*pos));
         }
     }
 
@@ -70,8 +67,8 @@ fn build_graph(
                 .is_some_and(|a| *a != '#')
             {
                 graph.add_edge(
-                    *nodeMap.get(&pos).unwrap(),
-                    *nodeMap.get(&(pos.0 + d0, pos.1 + d1)).unwrap(),
+                    *node_map.get(&pos).unwrap(),
+                    *node_map.get(&(pos.0 + d0, pos.1 + d1)).unwrap(),
                     0,
                 );
             }
