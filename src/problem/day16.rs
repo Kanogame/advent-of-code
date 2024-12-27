@@ -1,20 +1,18 @@
-use std::collections::{BTreeMap, BinaryHeap, HashMap, HashSet};
+use std::{
+    cmp::Reverse,
+    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
+};
 
 use petgraph::{
-    algo::dijkstra,
-    dot::{Config, Dot},
-    graph::{self, NodeIndex},
-    visit::{EdgeRef, VisitMap, Visitable},
+    graph::{Node, NodeIndex},
     Graph, Undirected,
 };
 
 use crate::generic_problem::{self, Day};
 
-const DIRECTIONS: [(i32, i32); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
-
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day16"),
         day_id: 16,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
@@ -66,65 +64,86 @@ fn build_graph(
     for i in graph.clone().raw_nodes() {
         let pos = i.weight;
 
-        //right
-        let mut x = pos.1 + 1;
-        while lines_map.get(&(pos.0, x)).is_some_and(|a| *a != '#') {
-            if nodeMap.get(&(pos.0, x)).is_some() {
+        for (d0, d1) in [(0, 1), (1, 0)] {
+            if lines_map
+                .get(&(pos.0 + d0, pos.1 + d1))
+                .is_some_and(|a| *a != '#')
+            {
                 graph.add_edge(
                     *nodeMap.get(&pos).unwrap(),
-                    *nodeMap.get(&(pos.0, x)).unwrap(),
-                    x - pos.1,
+                    *nodeMap.get(&(pos.0 + d0, pos.1 + d1)).unwrap(),
+                    0,
                 );
-                break;
             }
-            x += 1;
-        }
-
-        //bottom
-        let mut y = pos.0 + 1;
-        while lines_map.get(&(y, pos.1)).is_some_and(|a| *a != '#') {
-            if nodeMap.get(&(y, pos.1)).is_some() {
-                graph.add_edge(
-                    *nodeMap.get(&pos).unwrap(),
-                    *nodeMap.get(&(y, pos.1)).unwrap(),
-                    y - pos.0,
-                );
-                break;
-            }
-            y += 1;
         }
     }
-
-    println!(
-        "{:?}",
-        Dot::with_config(&graph, &[Config::GraphContentOnly])
-    );
-    println!("{:?}", (start, end));
     (graph, start, end)
 }
 
-fn s_dijkstra(graph: Graph<(i32, i32), i32, Undirected>, start: NodeIndex, end: NodeIndex) {
-    min_scores: HashMap<>;
-    best_a: HashSet<>;
-    best_score = -1;
-    heap = BinaryHeap<(0, start, (0, 1), [])> BinaryHeap::new();
+fn s_dijkstra(
+    graph: Graph<(i32, i32), i32, Undirected>,
+    start: NodeIndex,
+    end: NodeIndex,
+) -> (i32, i32) {
+    let mut min_scores: HashMap<(NodeIndex, (i32, i32)), i32> = HashMap::new();
+    let mut best_seats: HashSet<NodeIndex> = HashSet::new();
+    let mut best_score = -1;
 
-    while heap.len() > 0 {
-        score, pos, dir, seats = heap.pop();
-        if pos == 
+    // I spent so many time on this, binaryHeap - max-heap. Read the docs, idiot
+    let mut heap: BinaryHeap<Reverse<(i32, NodeIndex, (i32, i32), Vec<NodeIndex>)>> =
+        BinaryHeap::new();
+
+    heap.push(Reverse((0, start, (0, 1), vec![])));
+    while heap.len() != 0 {
+        let (score, pos, dir, seats) = heap.pop().unwrap().0;
+        if pos == end {
+            if best_score == -1 || best_score >= score {
+                best_seats.extend(seats.iter());
+                best_score = score;
+                continue;
+            }
+            break;
+        }
+
+        for new_node in graph.neighbors(pos) {
+            let new_dir = sub(
+                *graph.node_weight(new_node).unwrap(),
+                *graph.node_weight(pos).unwrap(),
+            );
+
+            let new_score = score + if new_dir == dir { 1 } else { 1001 };
+
+            // if node was never visited before
+            if min_scores.get(&(new_node, new_dir)).is_none() {
+                min_scores.insert((new_node, new_dir), new_score);
+            }
+
+            if min_scores
+                .get(&(new_node, new_dir))
+                .is_some_and(|x| *x >= new_score)
+            {
+                min_scores.insert((new_node, new_dir), new_score);
+                let mut c_s = seats.clone();
+                c_s.push(pos);
+                heap.push(Reverse((new_score, new_node, new_dir, c_s)));
+            }
+        }
     }
+    (best_score, best_seats.len() as i32 + 1)
 }
 
 pub fn part_one(input: generic_problem::ProblemInput) {
     let (graph, start, end) = parse_input(input.lines);
 
-    s_dijkstra(graph, start, end);
+    println!("{}", s_dijkstra(graph, start, end).0);
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    //
+    let (graph, start, end) = parse_input(input.lines);
+
+    println!("{}", s_dijkstra(graph, start, end).1);
 }
 
-fn add(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
-    (a.0 + b.0, a.1 + b.1)
+fn sub(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
+    (a.0 - b.0, a.1 - b.1)
 }
