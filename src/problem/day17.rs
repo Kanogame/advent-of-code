@@ -68,17 +68,8 @@ impl Machine {
                     println!("ERROR: illegal instruction");
                 }
             };
-            //println!("com {} state after {:?}", command, self);
         }
         return self.out[1..].to_string();
-    }
-
-    fn init(&mut self, a: i64) {
-        self.reg_a = a;
-        self.reg_b = 0;
-        self.reg_c = 0;
-        self.pointer = 0;
-        self.out = "".to_string();
     }
 
     fn halt(&self) -> bool {
@@ -106,21 +97,25 @@ impl Machine {
     }
 
     fn adv(&mut self, combo: i64) {
+        // 0
         self.reg_a = self.reg_a >> self.combo(combo);
         self.pointer += 2;
     }
 
     fn bxl(&mut self, value: i64) {
+        // 1
         self.reg_b = self.reg_b ^ value;
         self.pointer += 2;
     }
 
     fn bst(&mut self, combo: i64) {
+        // 2
         self.reg_b = self.combo(combo) % 8;
         self.pointer += 2;
     }
 
     fn jnz(&mut self, value: i64) {
+        // 3
         if self.reg_a != 0 {
             self.pointer = value as usize;
         } else {
@@ -129,22 +124,26 @@ impl Machine {
     }
 
     fn bxc(&mut self, _: i64) {
+        // 4
         self.reg_b = self.reg_b ^ self.reg_c;
         self.pointer += 2;
     }
 
     fn out(&mut self, combo: i64) {
+        // 5
         let value = self.combo(combo) % 8;
         self.out += &format!(",{}", value);
         self.pointer += 2;
     }
 
     fn bdv(&mut self, combo: i64) {
+        // 6
         self.reg_b = self.reg_a >> self.combo(combo);
         self.pointer += 2;
     }
 
     fn cdv(&mut self, combo: i64) {
+        // 7
         self.reg_c = self.reg_a >> self.combo(combo);
         self.pointer += 2;
     }
@@ -156,12 +155,22 @@ pub fn part_one(input: generic_problem::ProblemInput) {
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    let mut m = parse(input.lines);
+    let m = parse(input.lines);
 
-    let mut i: i64 = 0;
-    while m.run() != "2,4,1,2,7,5,0,3,4,7,1,7,5,5,3,0" {
-        i += 1;
-        m.init(i);
+    let mut a: i64 = 0;
+
+    for b in m.insturctions.into_iter().rev() {
+        // iterating over a % 8 variants
+        for h in 0..8 {
+            let a_tmp = (a << 3) + h;
+            let g = h ^ 2;
+            let c = a_tmp >> g;
+            if ((g ^ c) ^ 7) % 8 == b {
+                a <<= 3;
+                a += h;
+                break;
+            }
+        }
     }
-    println!("{}", i);
+    println!("{}", a);
 }
