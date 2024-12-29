@@ -3,9 +3,10 @@ use std::{
     collections::{BTreeMap, LinkedList},
 };
 
-use crate::generic_problem::{self, Day};
-
-const DIRECTIONS: [(i32, i32); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+use crate::{
+    aoc_lib::grid::grid::{g_add, DIRECTIONS},
+    generic_problem::{self, Day},
+};
 
 pub fn init() -> generic_problem::Day {
     return Day {
@@ -97,7 +98,7 @@ fn parse_input_two(lines: Vec<String>) -> (BTreeMap<(i32, i32), char>, (i32, i32
 
 //ret = success of moving
 fn move_box(pos: (i32, i32), direction: usize, map: &mut BTreeMap<(i32, i32), char>) -> bool {
-    let next_pos = add(pos, DIRECTIONS[direction]);
+    let next_pos = g_add(pos, DIRECTIONS[direction]);
     if map.get(&next_pos).is_some_and(|x| *x != '#') {
         let next_value = *map.get(&next_pos).unwrap();
         if next_value == '.' {
@@ -115,10 +116,6 @@ fn move_box(pos: (i32, i32), direction: usize, map: &mut BTreeMap<(i32, i32), ch
     return false;
 }
 
-fn add(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
-    (a.0 + b.0, a.1 + b.1)
-}
-
 fn part_res(map: &BTreeMap<(i32, i32), char>, reference: char) -> i32 {
     let mut res = 0;
     for ((a, b), v) in map {
@@ -133,7 +130,7 @@ pub fn part_one(input: generic_problem::ProblemInput) {
     let (mut lines_map, mut rob, alg) = parse_input(input.lines);
 
     for i in alg {
-        let next_pos = add(rob, DIRECTIONS[i]);
+        let next_pos = g_add(rob, DIRECTIONS[i]);
         if lines_map.get(&next_pos).is_some_and(|x| *x != '#') {
             let value = *lines_map.get(&next_pos).unwrap();
             if value == 'O' {
@@ -163,14 +160,14 @@ fn simple_clean_move(pos: (i32, i32), direction: (i32, i32), map: &mut BTreeMap<
         '[' => DIRECTIONS[0],
         _ => return,
     };
-    let next_pos = add(pos, direction);
+    let next_pos = g_add(pos, direction);
 
     *map.get_mut(&next_pos).unwrap() = *map.get(&pos).unwrap();
-    *map.get_mut(&add(next_pos, b_2)).unwrap() = *map.get(&add(pos, b_2)).unwrap();
+    *map.get_mut(&g_add(next_pos, b_2)).unwrap() = *map.get(&g_add(pos, b_2)).unwrap();
 
     // cleaning
     *map.get_mut(&pos).unwrap() = '.';
-    *map.get_mut(&add(pos, b_2)).unwrap() = '.';
+    *map.get_mut(&g_add(pos, b_2)).unwrap() = '.';
 }
 
 //ret = success of moving
@@ -187,7 +184,7 @@ fn move_wide_box(
     if pos_value == '#' {
         return false;
     }
-    let next_pos = add(pos, DIRECTIONS[direction]);
+    let next_pos = g_add(pos, DIRECTIONS[direction]);
     if map.get(&next_pos).is_none() {
         return false;
     }
@@ -200,7 +197,7 @@ fn move_wide_box(
     }
     if move_wide_box(next_pos, direction, map, tx)
         && move_wide_box(
-            add(
+            g_add(
                 next_pos,
                 match pos_value {
                     ']' => DIRECTIONS[2],
@@ -228,7 +225,7 @@ pub fn part_two(input: generic_problem::ProblemInput) {
     let (mut lines_map, mut rob, alg) = parse_input_two(input.lines);
 
     for i in alg {
-        let next_pos = add(rob, DIRECTIONS[i]);
+        let next_pos = g_add(rob, DIRECTIONS[i]);
         if lines_map.get(&next_pos).is_some() {
             let mut tx: LinkedList<(i32, i32)> = LinkedList::new();
             if move_wide_box(next_pos, i, &mut lines_map, &mut tx) {

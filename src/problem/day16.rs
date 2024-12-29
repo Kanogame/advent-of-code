@@ -5,7 +5,10 @@ use std::{
 
 use petgraph::{graph::NodeIndex, Graph, Undirected};
 
-use crate::generic_problem::{self, Day};
+use crate::{
+    aoc_lib::grid::grid::g_sub,
+    generic_problem::{self, Day},
+};
 
 pub fn init() -> generic_problem::Day {
     return Day {
@@ -103,7 +106,7 @@ fn s_dijkstra(
         }
 
         for new_node in graph.neighbors(pos) {
-            let new_dir = sub(
+            let new_dir = g_sub(
                 *graph.node_weight(new_node).unwrap(),
                 *graph.node_weight(pos).unwrap(),
             );
@@ -139,8 +142,4 @@ pub fn part_two(input: generic_problem::ProblemInput) {
     let (graph, start, end) = parse_input(input.lines);
 
     println!("{}", s_dijkstra(graph, start, end).1);
-}
-
-fn sub(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
-    (a.0 - b.0, a.1 - b.1)
 }

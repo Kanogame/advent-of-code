@@ -1,5 +1,6 @@
 use std::{env, fs::read_to_string};
 
+mod aoc_lib;
 use generic_problem::{Day, ProblemInput};
 use problem::MODULE_LIST;
 mod problem;
