@@ -4,7 +4,7 @@ use crate::generic_problem::{self, Day};
 
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day10"),
         day_id: 10,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
