@@ -1,6 +1,6 @@
 use std::{
     cmp::Reverse,
-    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
+    collections::{BinaryHeap, HashMap, HashSet},
 };
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
 
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day20"),
         day_id: 20,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
@@ -46,23 +46,23 @@ fn s_dijkstra(
     grid: &HashMap<(i32, i32), char>,
     start: (i32, i32),
     end: (i32, i32),
-) -> (i32, Vec<(i32, i32)>) {
+) -> Vec<((i32, i32), i32)> {
     let mut min_scores: HashMap<(i32, i32), (i32, (i32, i32))> = HashMap::new();
-    let mut best_score = -1;
 
     let mut heap: BinaryHeap<Reverse<(i32, (i32, i32))>> = BinaryHeap::new();
     let mut visited: HashSet<(i32, i32)> = HashSet::new();
+    let mut best_path: Vec<((i32, i32), i32)> = Vec::new();
 
     heap.push(Reverse((0, start)));
 
     while heap.len() > 0 {
         let (score, pos) = heap.pop().unwrap().0;
+        best_path.push((pos, score));
         if visited.contains(&pos) {
             continue;
         }
 
         if pos == end {
-            best_score = score;
             continue;
         }
 
@@ -89,73 +89,36 @@ fn s_dijkstra(
         visited.insert(pos);
     }
 
-    let mut best_path: Vec<(i32, i32)> = Vec::new();
+    best_path
+}
 
-    if best_score == -1 {
-        return (best_score, Vec::new());
+fn search(path: Vec<((i32, i32), i32)>, radius: i32) -> i32 {
+    let mut shortcuts = 0;
+    for (id, (a, cost_a)) in path.iter().enumerate() {
+        let (a_x, a_y) = *a;
+
+        for j in id..path.len() {
+            let ((b_x, b_y), cost_b) = path[j];
+
+            let distance = (a_x - b_x).abs() + (a_y - b_y).abs();
+            if distance < radius + 1 && cost_b - cost_a - distance >= 100 {
+                shortcuts += 1;
+            }
+        }
     }
-
-    let mut prev = min_scores.get(&end).unwrap().1;
-    best_path.push(end);
-    while prev != start {
-        prev = min_scores.get(&prev).unwrap().1;
-        best_path.push(prev);
-    }
-
-    (best_score, best_path)
+    shortcuts
 }
 
 pub fn part_one(input: generic_problem::ProblemInput) {
     let (map, start, end) = parse_input(input.lines);
-
-    let (len, mut path) = s_dijkstra(&map, start, end);
-    path.reverse();
-
-    let mut sc: BTreeMap<i32, i32> = BTreeMap::new();
-
-    //generalize for any type cheat distance
-    for (id, a) in path.iter().enumerate() {
-        let (a_x, a_y) = *a;
-        //shortcutting only closer to finish
-        for j in id..path.len() {
-            let (b_x, b_y) = path[j];
-
-            let diff_x = (a_x - b_x).abs();
-            let diff_y = (a_y - b_y).abs();
-
-            if diff_x > 0 && diff_x < 3 && diff_y == 0 {
-                //shortcut
-                let dist = (id as i32 - j as i32 + 2).abs();
-                if sc.contains_key(&dist) {
-                    *sc.get_mut(&dist).unwrap() += 1;
-                } else {
-                    sc.insert(dist, 1);
-                }
-            }
-
-            if diff_y > 0 && diff_y < 3 && diff_x == 0 {
-                //shortcut
-                let dist = (id as i32 - j as i32 + 2).abs();
-                if sc.contains_key(&dist) {
-                    *sc.get_mut(&dist).unwrap() += 1;
-                } else {
-                    sc.insert(dist, 1);
-                }
-            }
-        }
-    }
-
-    // lets just ignore the 'shortcut to exit' edge case, it works for real input
-    let mut res = 0;
-    for i in sc {
-        if i.0 >= 100 {
-            res += i.1;
-        }
-    }
+    let res = search(s_dijkstra(&map, start, end), 2);
 
     println!("{}", res);
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    //
+    let (map, start, end) = parse_input(input.lines);
+    let res = search(s_dijkstra(&map, start, end), 20);
+
+    println!("{}", res);
 }
