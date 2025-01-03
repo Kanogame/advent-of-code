@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, i64::MAX};
 
 use crate::{
     aoc_lib::grid::grid::{g_add, DIRECTIONS},
@@ -7,18 +7,19 @@ use crate::{
 
 pub fn init() -> generic_problem::Day {
     return Day {
-        name: String::from("test"),
+        name: String::from("day21"),
         day_id: 21,
         part_one: Box::new(part_one),
         part_two: Box::new(part_two),
     };
 }
 
+// fr?
 #[rustfmt::skip]
 const NUMPAD: [[char; 3]; 4] = [
     ['7', '8', '9'],
-    ['6', '5', '4'],
-    ['3', '2', '1'],
+    ['4', '5', '6'],
+    ['1', '2', '3'],
     [' ', '0', 'A'],
 ];
 
@@ -30,7 +31,6 @@ const DIRPAD: [[char; 3]; 2] = [
 
 const DIR_CH: [char; 4] = ['>', 'v', '<', '^'];
 
-// to much
 fn bfs_pad(
     map: &HashMap<(i32, i32), char>,
     current: (i32, i32),
@@ -57,7 +57,6 @@ fn bfs_pad(
     }
 }
 
-//get rid of zig-zags
 fn fastest_b2b_paths(map: HashMap<(i32, i32), char>) -> HashMap<(char, char), Vec<Vec<char>>> {
     let mut b2b = HashMap::new();
 
@@ -96,85 +95,101 @@ fn get_b2b_cache() -> (
             dir_map.insert((i as i32, j as i32), DIRPAD[i][j]);
         }
     }
+
     let dir_b2b = fastest_b2b_paths(dir_map);
     (num_b2b, dir_b2b)
 }
 
 fn translate(
-    prev: char,
-    seq: Vec<char>,
+    keys: &Vec<char>,
+    index: usize,
+    prev_key: char,
     current_path: Vec<char>,
-    path: &mut Vec<Vec<char>>,
+    result: &mut Vec<Vec<char>>,
     b2b: &HashMap<(char, char), Vec<Vec<char>>>,
 ) {
-    if seq.len() == 0 {
-        path.push(current_path);
+    if index > keys.len() - 1 {
+        result.push(current_path);
         return;
     }
 
-    let cache = b2b.get(&(prev, seq[0])).unwrap();
-    for i in cache.clone().iter_mut() {
+    for path in b2b.get(&(prev_key, keys[index])).unwrap() {
         let mut new_path = current_path.clone();
-        new_path.append(i);
+        new_path.append(&mut path.clone());
         new_path.push('A');
-        translate(seq[0], seq[1..].to_vec(), new_path, path, b2b);
+        translate(keys, index + 1, keys[index].clone(), new_path, result, b2b);
     }
 }
 
-fn d2d_rec(
-    paths: Vec<Vec<char>>,
+fn shortest_seq(
+    keys: Vec<char>,
     depth: i32,
+    cache: &mut HashMap<(Vec<char>, i32), i64>,
     dir_b2b: &HashMap<(char, char), Vec<Vec<char>>>,
-    cache: &mut HashMap<(Vec<char>, i32), Vec<Vec<char>>>,
-) -> Vec<Vec<char>> {
+) -> i64 {
     if depth == 0 {
-        return paths;
+        return keys.len() as i64;
     }
 
-    let mut res_paths = Vec::new();
-    for i in paths.iter() {
-        let mut new_paths = Vec::new();
-        if cache.contains_key(&(i.clone(), depth)) {
-            res_paths.append(&mut (cache.get(&(i.clone(), depth)).unwrap()).clone());
-        } else {
-            translate('A', i.clone(), vec![], &mut new_paths, dir_b2b);
-            cache.insert((i.clone(), depth), new_paths.clone());
+    if cache.get(&(keys.clone(), depth)).is_some() {
+        return *cache.get(&(keys.clone(), depth)).unwrap();
+    }
+
+    let subkey: Vec<Vec<char>> = keys
+        .split_inclusive(|x| *x == 'A')
+        .map(|x| x.to_vec())
+        .filter(|x: &Vec<char>| x.len() != 0)
+        .collect();
+
+    let mut total = 0;
+    for i in subkey {
+        let mut path = Vec::new();
+        translate(&i, 0, 'A', vec![], &mut path, &dir_b2b);
+
+        let mut min = MAX;
+        for j in path {
+            let tmp = shortest_seq(j, depth - 1, cache, dir_b2b);
+            if tmp < min {
+                min = tmp;
+            }
         }
-        res_paths.append(&mut d2d_rec(new_paths, depth - 1, dir_b2b, cache));
+        total += min;
     }
 
-    res_paths
+    cache.insert((keys, depth), total);
+
+    total
 }
 
-fn run_part_one(input: String) -> i32 {
+fn run(input: Vec<String>, depth: i32) -> i64 {
     let (num_b2b, dir_b2b) = get_b2b_cache();
 
-    //number -> button
-    let mut path = Vec::new();
-    translate('A', input.chars().collect(), vec![], &mut path, &num_b2b);
+    let mut cache = HashMap::new();
+    let mut res: i64 = 0;
 
-    let mut cache: HashMap<(Vec<char>, i32), Vec<Vec<char>>> = HashMap::new();
-    let path_d2 = d2d_rec(path, 2, &dir_b2b, &mut cache);
-    let mut min = path_d2[0].len();
-    for i in path_d2 {
-        if i.len() < min {
-            println!("{}", min);
-            min = i.len();
+    for line in input {
+        //number -> button
+        let mut path = Vec::new();
+        translate(&line.chars().collect(), 0, 'A', vec![], &mut path, &num_b2b);
+
+        let mut min = MAX;
+        for j in path {
+            let tmp = shortest_seq(j, depth, &mut cache, &dir_b2b);
+            if tmp < min {
+                min = tmp;
+            }
         }
+
+        res += line[0..line.len() - 1].parse::<i64>().unwrap() * min;
     }
-    println!("{}", min);
-    return min as i32;
+
+    res
 }
 
 pub fn part_one(input: generic_problem::ProblemInput) {
-    let mut res = 0;
-    for i in input.lines.iter() {
-        res += (i[..i.len() - 1].to_string().parse::<i32>().unwrap()) * run_part_one(i.clone());
-    }
-
-    println!("{}", res);
+    println!("{}", run(input.lines, 2));
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    //
+    println!("{}", run(input.lines, 25));
 }
