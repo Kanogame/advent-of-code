@@ -40,7 +40,7 @@ pub fn part_one(input: generic_problem::ProblemInput) {
     println!("{}", res);
 }
 
-fn get_unique(arr: &VecDeque<i64>) -> i64 {
+fn get_unique(arr: &[i64; 4]) -> i64 {
     return arr
         .iter()
         .map(|x| *x + 9)
@@ -55,40 +55,38 @@ pub fn part_two(input: generic_problem::ProblemInput) {
         .map(|x| x.parse().unwrap())
         .collect::<Vec<i64>>();
 
-    let mut seq_map = HashMap::new();
+    let mut seq_map = vec![(0, STEPS as usize); 137568];
 
-    for secret in secrets {
-        let mut secret = secret;
-        let mut been = HashSet::new();
-        let mut diff_q = VecDeque::new();
-        let mut prev_price = secret;
+    for (m, secret) in secrets.iter().enumerate() {
+        let mut secret = *secret;
+        let mut diff_q = [10; 4];
+        let mut prev_price = secret % 10;
         for _ in 0..STEPS {
             secret = ((secret << 6) ^ secret) & MODULA;
-            secret = ((secret >> 5) ^ secret);
+            secret = (secret >> 5) ^ secret;
             secret = ((secret << 11) ^ secret) & MODULA;
             let price = secret % 10;
-            diff_q.push_back(price - prev_price);
+
+            diff_q[0] = diff_q[1];
+            diff_q[1] = diff_q[2];
+            diff_q[2] = diff_q[3];
+            diff_q[3] = price - prev_price;
             prev_price = price;
-            if diff_q.len() < 4 {
+
+            if diff_q[0] == 10 {
                 continue;
             }
-            diff_q.pop_front();
             let q = get_unique(&diff_q);
-            if been.contains(&q) {
+            if seq_map[q as usize].1 == m {
                 continue;
             }
-            if seq_map.contains_key(&q) {
-                *seq_map.get_mut(&q).unwrap() += price;
-            } else {
-                seq_map.insert(q.clone(), price);
-            }
-            been.insert(q);
+            seq_map[q as usize] = (price + seq_map[q as usize].0, m);
         }
     }
 
     let mut max = 0;
 
-    for (_, i) in seq_map {
+    for (i, _) in seq_map {
         if i > max {
             max = i;
         }
