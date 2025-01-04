@@ -14,6 +14,7 @@ pub mod day19;
 pub mod day2;
 pub mod day20;
 pub mod day21;
+pub mod day22;
 pub mod day3;
 pub mod day4;
 pub mod day5;
@@ -22,7 +23,7 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
-pub static MODULE_LIST: [fn() -> generic_problem::Day; 21] = [
+pub static MODULE_LIST: [fn() -> generic_problem::Day; 22] = [
     day1::init,
     day2::init,
     day3::init,
@@ -44,4 +45,5 @@ pub static MODULE_LIST: [fn() -> generic_problem::Day; 21] = [
     day19::init,
     day20::init,
     day21::init,
+    day22::init,
 ];
