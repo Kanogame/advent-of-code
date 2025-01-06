@@ -119,7 +119,7 @@ fn is_tree(robots: &Vec<Robot>) -> bool {
     res
 }
 
-fn print_robots(robots: &Vec<Robot>) {
+fn _print_robots(robots: &Vec<Robot>) {
     let mut lines: Vec<Vec<char>> = vec![vec!['.'; ROOM_WIDTH as usize]; ROOM_HEIGHT as usize];
     for i in robots {
         lines[i.pos.1 as usize][i.pos.0 as usize] = '*';
@@ -145,7 +145,7 @@ pub fn part_two(input: generic_problem::ProblemInput) {
         }
         if is_tree(&robots) {
             // bruh. What a day: no examples, nothing, just 'a Christmas tree'
-            print_robots(&robots);
+            //_print_robots(&robots);
             break;
         }
     }

@@ -7,7 +7,7 @@ use std::{
 use itertools::Itertools;
 use petgraph::{
     dot::{Config, Dot},
-    graph, Directed, Graph,
+    Directed, Graph,
 };
 
 use crate::generic_problem::{self, Day};
@@ -59,17 +59,6 @@ pub fn part_one(input: generic_problem::ProblemInput) {
             },
         );
     }
-
-    println!(
-        "{:?}",
-        wires
-            .iter()
-            .filter(|(a, _)| (**a).chars().nth(0).unwrap() == 'z')
-            .sorted_by(|(a1, _), (a2, _)| (**a1).cmp(*a2))
-            .rev()
-            .collect::<Vec<(&String, &bool)>>()
-    );
-
     let res = wires
         .iter()
         .filter(|(a, _)| (**a).chars().nth(0).unwrap() == 'z')
@@ -81,7 +70,7 @@ pub fn part_one(input: generic_problem::ProblemInput) {
 }
 
 pub fn part_two(input: generic_problem::ProblemInput) {
-    let (_, mut logic) = parse(input.lines);
+    let (_, logic) = parse(input.lines);
 
     let mut gh_id = HashMap::new();
 
